@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Viewer SPA with OpenSeadragon</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
+    <style>
+        body,
+        html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container-fluid {
+            height: 100%;
+            padding: 0;
+        }
+
+        #logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+        }
+
+        #sidebar {
+            height: 100%;
+            width: 200px;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+            padding-top: 60px;
+        }
+
+        #main-content {
+            margin-left: 200px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #image-container {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        #answer-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+        }
+
+        #zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #zoom-slider {
+            width: 200px;
+        }
+
+        #zoom-level {
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div id="logo">
+            <img src="assets/logo.png" alt="Logo" width="auto" height="50" />
+        </div>
+        <div id="sidebar">
+            <!-- Sidebar content -->
+        </div>
+        <div id="main-content">
+            <div id="image-container"></div>
+            <div id="answer-toggle" class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="show-answer">
+                <label class="form-check-label" for="show-answer">Show answer</label>
+            </div>
+            <div id="controls">
+                <button id="prev-btn" class="btn btn-primary">&lt; Previous</button>
+                <div id="zoom-controls">
+                    <input type="range" id="zoom-slider" min="0" max="100" value="0">
+                    <span id="zoom-level">100%</span>
+                    <button id="reset-btn" class="btn btn-secondary">Reset</button>
+                </div>
+                <button id="next-btn" class="btn btn-primary">Next &gt;</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 10;
+        let viewer;
+        let baseLayer, answerLayer;
+        let isInitialLoad = true;
+        let showAnswer = false; // New variable to track the state of the "Show answer" toggle
+
+        function initOpenSeadragon() {
+            viewer = OpenSeadragon({
+                id: "image-container",
+                prefixUrl: "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/",
+                visibilityRatio: 1.0,
+                constrainDuringPan: true,
+                minZoomLevel: 0.1,
+                maxZoomLevel: 10,
+                zoomPerClick: 1.5,
+                zoomPerScroll: 1.2,
+                showNavigationControl: false
+            });
+
+            viewer.addHandler('zoom', function (event) {
+                updateZoomControls(event.zoom);
+            });
+
+            loadImages();
+        }
+
+        function loadImages() {
+            const imageName = `RuleOfTheRoad_Book-for-web-221-237-${String(currentPage).padStart(2, '0')}.png`;
+            const baseTileSource = {
+                type: 'image',
+                url: `assets/LAYER_0/${imageName}`
+            };
+            const answerTileSource = {
+                type: 'image',
+                url: `assets/LAYER_1/${imageName}`
+            };
+
+            let oldBounds = viewer.viewport.getBounds();
+
+            viewer.world.removeAll();
+            
+            viewer.addTiledImage({
+                tileSource: baseTileSource,
+                opacity: 1,
+                success: function(event) {
+                    baseLayer = event.item;
+                    if (!isInitialLoad) {
+                        viewer.viewport.fitBounds(oldBounds, true);
+                    }
+                }
+            });
+
+            viewer.addTiledImage({
+                tileSource: answerTileSource,
+                opacity: showAnswer ? 1 : 0, // Set opacity based on showAnswer state
+                success: function(event) {
+                    answerLayer = event.item;
+                }
+            });
+
+            isInitialLoad = false;
+        }
+
+        function nextPage() {
+            currentPage = currentPage % totalPages + 1;
+            loadImages();
+        }
+
+        function prevPage() {
+            currentPage = (currentPage - 2 + totalPages) % totalPages + 1;
+            loadImages();
+        }
+
+        function updateZoomControls(zoom) {
+            const zoomPercentage = Math.round(zoom * 100);
+            document.getElementById('zoom-slider').value = zoomPercentage;
+            document.getElementById('zoom-level').textContent = `${zoomPercentage}%`;
+        }
+
+        function resetView() {
+            viewer.viewport.goHome();
+        }
+
+        document.getElementById('next-btn').addEventListener('click', nextPage);
+        document.getElementById('prev-btn').addEventListener('click', prevPage);
+        document.getElementById('reset-btn').addEventListener('click', resetView);
+
+        document.getElementById('show-answer').addEventListener('change', function() {
+            showAnswer = this.checked; // Update the showAnswer state
+            if (answerLayer) {
+                answerLayer.setOpacity(showAnswer ? 1 : 0);
+            }
+        });
+
+        document.getElementById('zoom-slider').addEventListener('input', function() {
+            const zoom = this.value / 100;
+            viewer.viewport.zoomTo(zoom);
+        });
+
+        // Initialize OpenSeadragon
+        initOpenSeadragon();
+    </script>
+</body>
+
+</html>
