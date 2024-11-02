@@ -107,6 +107,7 @@
                     <input type="range" id="zoom-slider" min="0" max="100" value="0">
                     <span id="zoom-level">100%</span>
                     <button id="reset-btn" class="btn btn-secondary">Reset</button>
+                    <span id="page-counter" class="ms-2"></span>
                 </div>
                 <button id="next-btn" class="btn btn-primary">Next &gt;</button>
             </div>
@@ -141,6 +142,12 @@
             loadImages();
         }
 
+        function updatePageCounter() {
+            const completion = ((currentPage / totalPages) * 100).toFixed(1);
+            document.getElementById('page-counter').textContent =
+                `${currentPage}/${totalPages} (${completion}% completed)`;
+        }
+
         function loadImages() {
             const imageName = `RuleOfTheRoad_Book-for-web-221-237-${String(currentPage).padStart(2, '0')}.png`;
             const baseTileSource = {
@@ -155,11 +162,11 @@
             let oldBounds = viewer.viewport.getBounds();
 
             viewer.world.removeAll();
-            
+
             viewer.addTiledImage({
                 tileSource: baseTileSource,
                 opacity: 1,
-                success: function(event) {
+                success: function (event) {
                     baseLayer = event.item;
                     if (!isInitialLoad) {
                         viewer.viewport.fitBounds(oldBounds, true);
@@ -170,12 +177,13 @@
             viewer.addTiledImage({
                 tileSource: answerTileSource,
                 opacity: showAnswer ? 1 : 0, // Set opacity based on showAnswer state
-                success: function(event) {
+                success: function (event) {
                     answerLayer = event.item;
                 }
             });
 
             isInitialLoad = false;
+            updatePageCounter(); // Add this line
         }
 
         function nextPage() {
@@ -202,17 +210,20 @@
         document.getElementById('prev-btn').addEventListener('click', prevPage);
         document.getElementById('reset-btn').addEventListener('click', resetView);
 
-        document.getElementById('show-answer').addEventListener('change', function() {
+        document.getElementById('show-answer').addEventListener('change', function () {
             showAnswer = this.checked; // Update the showAnswer state
             if (answerLayer) {
                 answerLayer.setOpacity(showAnswer ? 1 : 0);
             }
         });
 
-        document.getElementById('zoom-slider').addEventListener('input', function() {
+        document.getElementById('zoom-slider').addEventListener('input', function () {
             const zoom = this.value / 100;
             viewer.viewport.zoomTo(zoom);
         });
+
+        // Initialize page counter
+        updatePageCounter();
 
         // Initialize OpenSeadragon
         initOpenSeadragon();
