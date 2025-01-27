@@ -93,11 +93,11 @@ function loadImages() {
     const imageName = `RuleOfTheRoad_Book-for-web-221-237-${String(currentPage).padStart(2, '0')}.png`;
     const baseTileSource = {
         type: 'image',
-        url: `assets/LAYER_0/${imageName}`
+        url: `../assets/LAYER_0/${imageName}`
     };
     const answerTileSource = {
         type: 'image',
-        url: `assets/LAYER_1/${imageName}`
+        url: `../assets/LAYER_1/${imageName}`
     };
 
     let oldBounds = viewer.viewport.getBounds();
