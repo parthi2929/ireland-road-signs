@@ -3,7 +3,7 @@ let totalPages = 17;
 let viewer;
 let baseLayer, answerLayer;
 let isInitialLoad = true;
-let showAnswer = false; // New variable to track the state of the "Show answer" toggle
+let showAnswer = false;
 
 function initOpenSeadragon() {
     const isMobile = window.innerWidth <= 768;
@@ -21,13 +21,17 @@ function initOpenSeadragon() {
         defaultZoomLevel: isMobile ? 0.85 : 0.33,
         homeFitBounds: true,
         autoResize: true,
-        viewportMargins: {    /* Added to control viewport margins */
+        gestureSettingsTouch: {
+            pinchToZoom: true,
+            flickEnabled: false      // Disable default flick behavior for mobile
+        },
+        viewportMargins: {
             top: 0,
             left: 0,
             right: 0,
             bottom: 0
         },
-        viewerPadding: {      /* Added to remove padding */
+        viewportPadding: {
             top: 0,
             left: 0,
             right: 0,
@@ -35,14 +39,44 @@ function initOpenSeadragon() {
         }
     });
 
-    // Add resize handler to adjust zoom when switching between mobile/desktop
-    window.addEventListener('resize', function () {
+    // Add mobile swipe detection only if on mobile
+    if (isMobile) {
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const container = document.getElementById('image-container');
+        
+        container.addEventListener('touchstart', function(e) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        container.addEventListener('touchend', function(e) {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            
+            // Minimum swipe distance threshold (in pixels)
+            const minSwipeDistance = 50;
+            
+            // Only handle horizontal swipes (ignore vertical swipes)
+            if (Math.abs(deltaX) > minSwipeDistance && Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (deltaX > 0) {
+                    prevPage(); // Swipe right to go to previous page
+                } else {
+                    nextPage(); // Swipe left to go to next page
+                }
+            }
+        });
+    }
+
+    // Add resize handler
+    window.addEventListener('resize', function() {
         const isMobile = window.innerWidth <= 768;
         viewer.viewport.zoomTo(isMobile ? 0.85 : 0.33);
     });
 
-
-    viewer.addHandler('zoom', function (event) {
+    viewer.addHandler('zoom', function(event) {
         updateZoomControls(event.zoom);
     });
 
