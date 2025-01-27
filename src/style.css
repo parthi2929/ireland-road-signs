@@ -1,7 +1,7 @@
+/* First, remove overflow: hidden from body to allow scrolling on mobile */
 body, html {
     height: 100%;
     margin: 0;
-    overflow: hidden;
 }
 
 .container-fluid {
@@ -35,9 +35,11 @@ body, html {
 
 /* Header Elements */
 #logo {
-    position: fixed;  /* Changed from absolute to fixed */
+    position: fixed;
+    /* Changed from absolute to fixed */
     top: 10px;
-    left: 260px;     /* Changed from 10px to 260px to account for sidebar width */
+    left: 260px;
+    /* Changed from 10px to 260px to account for sidebar width */
     z-index: 1000;
 }
 
@@ -56,10 +58,14 @@ body, html {
 #image-container {
     flex-grow: 1;
     position: relative;
-    display: flex;    /* Added */
-    align-items: center;  /* Added */
-    justify-content: center;  /* Added */
-    margin: 70px 10px 10px;  /* Added margin-top for logo space */
+    display: flex;
+    /* Added */
+    align-items: center;
+    /* Added */
+    justify-content: center;
+    /* Added */
+    margin: 70px 10px 10px;
+    /* Added margin-top for logo space */
     height: calc(100vh - 140px);
 }
 
@@ -74,7 +80,7 @@ body, html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px 10px; 
+    padding: 5px 10px;
 }
 
 #zoom-controls {
@@ -112,18 +118,54 @@ body, html {
     border-color: #0d6efd;
 }
 
+/* Add this to preserve desktop behavior */
+@media (min-width: 769px) {
+    body, html {
+        overflow: hidden;
+    }
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
+
+    body {
+        overflow-y: auto;
+        /* Enable vertical scrolling on mobile */
+    }
+
     #sidebar {
         left: -250px;
     }
 
     #main-content {
         margin-left: 0;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    #answer-toggle {
+        position: fixed;
+        top: 70px;
+        /* Position it below the logo */
+        right: 10px;
+        z-index: 1000;
+        background-color: rgba(248, 249, 250, 0.9);
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    #image-container {
+        height: 80vh;
+        /* Adjust height for mobile */
+        min-height: 300px;
+        margin: 70px 10px 10px;
     }
 
     #footer {
+        position: relative;
+        /* Change from fixed to relative */
         left: 0;
+        margin-top: 20px;
     }
 
     #sidebar-toggle {
@@ -131,7 +173,8 @@ body, html {
     }
 
     #logo {
-        left: 10px;  /* Changed from 60px to 10px */
+        left: 10px;
+        /* Changed from 60px to 10px */
     }
 
     /* Controls adjustments for mobile */

@@ -18,7 +18,7 @@ function initOpenSeadragon() {
         zoomPerClick: 1.5,
         zoomPerScroll: 1.2,
         showNavigationControl: false,
-        defaultZoomLevel: isMobile ? 0.85 : 0.33,
+        defaultZoomLevel: isMobile ? 0.85 : 0.52,
         homeFitBounds: true,
         autoResize: true,
         gestureSettingsTouch: {
@@ -44,21 +44,21 @@ function initOpenSeadragon() {
         let touchStartX = 0;
         let touchStartY = 0;
         const container = document.getElementById('image-container');
-        
-        container.addEventListener('touchstart', function(e) {
+
+        container.addEventListener('touchstart', function (e) {
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
         });
 
-        container.addEventListener('touchend', function(e) {
+        container.addEventListener('touchend', function (e) {
             const touchEndX = e.changedTouches[0].clientX;
             const touchEndY = e.changedTouches[0].clientY;
             const deltaX = touchEndX - touchStartX;
             const deltaY = touchEndY - touchStartY;
-            
+
             // Minimum swipe distance threshold (in pixels)
             const minSwipeDistance = 50;
-            
+
             // Only handle horizontal swipes (ignore vertical swipes)
             if (Math.abs(deltaX) > minSwipeDistance && Math.abs(deltaX) > Math.abs(deltaY)) {
                 if (deltaX > 0) {
@@ -71,12 +71,12 @@ function initOpenSeadragon() {
     }
 
     // Add resize handler
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         const isMobile = window.innerWidth <= 768;
         viewer.viewport.zoomTo(isMobile ? 0.85 : 0.33);
     });
 
-    viewer.addHandler('zoom', function(event) {
+    viewer.addHandler('zoom', function (event) {
         updateZoomControls(event.zoom);
     });
 
